@@ -20,4 +20,10 @@ export class  PlacesService {
   getPlaces() {
     return [...this.Places];
   }
+
+
+  getPlace(id: string) {
+    // Spread-Operator In order not to inherit the original object
+    return {...this.Places.find(p => p.id === id)};
+  }
 }
