@@ -1,6 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
-import { NavController } from '@ionic/angular';
+import { ActivatedRoute, Router } from '@angular/router';
+import { ModalController, NavController } from '@ionic/angular';
+import { CreateBookingComponent } from '../../../bookings/create-booking/create-booking.component';
+import { Place } from '../../place.model';
+import { PlacesService } from '../../places.service';
 
 @Component({
   selector: 'app-place-detail',
@@ -8,12 +11,24 @@ import { NavController } from '@ionic/angular';
   styleUrls: ['./place-detail.page.scss'],
 })
 export class PlaceDetailPage implements OnInit {
+  place: Place;
 
-  constructor(private router: Router, private navController: NavController) { }
+
+  constructor(private navController: NavController,
+              private modalCtrl: ModalController, private placesService: PlacesService,
+              private route: ActivatedRoute,
+              ) { }
 
 
 
   ngOnInit() {
+    this.route.paramMap.subscribe(paramMap => {
+      if (!paramMap.has('placeId')) {
+        this.navController.navigateBack('/places/tabs/discover');
+        return;
+      }
+      this.place = this.placesService.getPlace(paramMap.get('placeId'));
+    });
   }
 
   onBookPlace() {
@@ -21,7 +36,24 @@ export class PlaceDetailPage implements OnInit {
     // this.router.navigateByUrl('/places/tabs/discover');
 
     // IonicStyle
-    this.navController.navigateBack('/places/tabs/discover');
+    // this.navController.navigateBack('/places/tabs/discover');
+
+    // ModalController allow to open modal by pointing to the desired compoment: here createBooking
+    this.modalCtrl.create({component :  CreateBookingComponent, componentProps: {selectedPlace : this.place}}).then(modalEl =>  {
+modalEl.present();
+return modalEl.onDidDismiss();
+
+    })
+    .then(resultData => {
+      console.log(resultData.data, resultData.role);
+      if (resultData.role === 'confirm') {
+        console.log('BOOKED!');
+      }
+    });
+
+
+
+
 
   }
 }
